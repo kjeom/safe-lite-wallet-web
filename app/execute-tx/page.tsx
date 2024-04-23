@@ -1,9 +1,7 @@
-'use client';
+"use client";
 
-import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
-import { useState } from 'react';
 import { useSafeLite } from "@/hooks/useSafeLite";
-
+import { useSignMessage } from "wagmi";
 
 export default function ExecuteTx() {
     const { data: walletClient, isError, isLoading } = useWalletClient() 
@@ -44,32 +42,7 @@ export default function ExecuteTx() {
     return (
         <div>
             <h1>Execute Transaction</h1>
-            <h1>{safeLiteWallet}</h1>
-            <label htmlFor="to">To:</label>
-            <input
-                type="text"
-                id="to"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-            />
-            <br />
-            <label htmlFor="value">Value:</label>
-            <input
-                type="number"
-                id="value"
-                value={value}
-                onChange={(e) => setValue(parseInt(e.target.value))}
-            />
-            <br />
-            <label htmlFor="data">Data:</label>
-            <input
-                type="text"
-                id="data"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-            />
-            <br />
-            <button onClick={executeTransactionHandler}>Execute Transaction</button>
+            <h2>{safeLiteWallet}</h2>
         </div>
     ); 
 }

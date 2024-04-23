@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useWalletClient, useWaitForTransactionReceipt } from "wagmi"; // 지갑 클라이언트의 데이터 로딩 상태 관리
@@ -6,17 +5,17 @@ import * as safeLiteAbi from '@/abi/safeLite.json';
 import { useEffect, useState } from "react";
 import { isAddress } from "web3-validator";
 import { useSafeLite } from "@/hooks/useSafeLite";
-import { SafeLiteWalletContext } from "@/app/src/contexts/SafeLiteWalletContext";
 
-export default function CreateWallet() { // 멀티시그 지갑 생성 컴포넌트
-    const { data: walletClient, isError, isLoading } = useWalletClient() // 와그미에서 지갑 클라이언트와 관련된 데이터 가져오기
-    const [safeLiteDeployTxHash, setSafeLiteDeployTxHash] = useState('') // 멀티시그 지갑 배포 트랜잭션의 해시를 저장, 지갑 생성 후 트랜잭션 상태를 확인
+
+export default function CreateWallet() {
+    const { data: walletClient, isError, isLoading } = useWalletClient()
+    const [safeLiteDeployTxHash, setSafeLiteDeployTxHash] = useState('')
     const result = useWaitForTransactionReceipt({
         hash: safeLiteDeployTxHash as `0x${string}`,
     })
-    const [threshold, setThreshold] = useState(0) // threshold 초기화
-    const [owners, setOwners] = useState<`0x${string}`[]>(['0x',]) // owners 초기화
-    const safeLiteWallet = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
+    const [threshold, setThreshold] = useState(0)
+    const [owners, setOwners] = useState<`0x${string}`[]>(['0x',])
+    const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
 
     const createHandler = async () => { // 지갑 생성 함수, 버튼 클릭 시 호출
         let invalidAddr = ''
@@ -74,7 +73,6 @@ export default function CreateWallet() { // 멀티시그 지갑 생성 컴포넌
     }
 
     return (
-        <SafeLiteWalletContext.Provider value={safeLiteWallet}>
         <div>
             <h1>Create Wallet</h1>
             <ul>
@@ -103,9 +101,9 @@ export default function CreateWallet() { // 멀티시그 지갑 생성 컴포넌
                     }}
                 />
             </ul>
+            <h1>{safeLite}</h1>
             <button onClick={createHandler}>Create</button>
             <h1>{safeLiteWallet}</h1>
         </div>
-        </SafeLiteWalletContext.Provider>
     );
 }
