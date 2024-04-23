@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
@@ -6,6 +5,7 @@ import * as safeLiteAbi from '@/abi/safeLite.json';
 import { useEffect, useState } from "react";
 import { isAddress } from "web3-validator";
 import { useSafeLite } from "@/hooks/useSafeLite";
+
 
 export default function CreateWallet() {
     const { data: walletClient, isError, isLoading } = useWalletClient()
@@ -15,7 +15,7 @@ export default function CreateWallet() {
     })
     const [threshold, setThreshold] = useState(0)
     const [owners, setOwners] = useState<`0x${string}`[]>(['0x',])
-    useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
+    const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
 
     const createHandler = async () => {
         let invalidAddr = ''
@@ -98,6 +98,7 @@ export default function CreateWallet() {
                     }}
                 />
             </ul>
+            <h1>{safeLite}</h1>
             <button onClick={createHandler}>Create</button>
         </div>
     );
