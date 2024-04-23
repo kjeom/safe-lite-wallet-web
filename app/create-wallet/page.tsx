@@ -16,6 +16,7 @@ export default function CreateWallet() {
     const [threshold, setThreshold] = useState(0)
     const [owners, setOwners] = useState<`0x${string}`[]>(['0x',])
     const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
+    const safeLiteWallet = useSafeLite()
 
     const createHandler = async () => { // 지갑 생성 함수, 버튼 클릭 시 호출
         let invalidAddr = ''
