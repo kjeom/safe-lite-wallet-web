@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react"
 import { useReadContract, useWalletClient } from "wagmi"
 import * as safeLiteAbi from '@/abi/safeLite.json';
 import { isAddress } from "web3-validator"
-
+import { SafeLiteWalletContext } from "@/app/src/contexts/SafeLiteWalletContext";
 
 export const useSafeLite = (address:`0x${string}` | undefined = undefined) => {
     const { data: walletClient, isError, isLoading } = useWalletClient()
@@ -16,7 +16,7 @@ export const useSafeLite = (address:`0x${string}` | undefined = undefined) => {
 
     useEffect(() => {
         if (address && isAddress(address) && isOwner.data === true) {
-            setSafeLite(address)
+            setSafeLite(address) 
         }
     }, [address, isOwner.data])
     return safeLite
