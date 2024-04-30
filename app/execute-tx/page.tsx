@@ -1,19 +1,22 @@
 'use client';
 
 import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
+import { signMessage, writeContract, readContract, verifyMessage, VerifyMessageReturnType, type VerifyMessageErrorType } from '@wagmi/core';
+import { config } from '@/app/config/config';
+import { parseGwei } from 'viem'
+import { ethers } from "ethers";
 import { useState } from 'react';
 import { useSafeLite } from "@/hooks/useSafeLite";
+import * as safeLiteAbi from '@/abi/safeLite.json';
 
 
 export default function ExecuteTx() {
-    const { data: walletClient, isError, isLoading } = useWalletClient() 
-    const [to, setTo] = useState('');
-    const [value, setValue] = useState(0);
+    const { data: walletClient, isError, isLoading } = useWalletClient();
+    const [toInput, setTo] = useState('');
+    const [valueInput, setValue] = useState(0);
     const [data, setData] = useState('');
-    const [signatures, setSignatures] = useState([]);
+    const safeLiteWallet = useSafeLite();
 
-    const safeLiteWallet = useSafeLite()
-    
     const executeTransactionHandler = async () => {
         try {
             if (!safeLiteWallet) {
@@ -21,11 +24,69 @@ export default function ExecuteTx() {
                 return;
             }
 
-            const transaction = await safeLiteWallet.executeTransaction({
-                to: `0x${to}`,
-                value: BigInt(value),
-                data: `0x${data}`,
-                signatures,
+            // 논스 값 불러오기
+            const nonce = await readContract(config, {
+                abi: safeLiteAbi.abi,
+                address: safeLiteWallet,
+                functionName: 'nonce',
+                args: [],
+            });
+            console.log("nonce is: ", nonce);
+            
+
+            // 서명 값 받아오기, hash = getTransactionHash -> ethers.utils.arrayify(hash)
+            const hash = await readContract(config, {
+                abi: safeLiteAbi.abi,
+                address: safeLiteWallet,
+                functionName: 'getTransactionHash',
+                args: [Number(nonce), safeLiteWallet, BigInt(valueInput), "0x"],
+            });
+            console.log("Transaction hash fetched: ", hash);
+
+            // 서명 값 넣어주기, owner1Sig = signMessage(ethers.utils.arrayify(hash))
+            // const arrayifiedHash = ethers.utils.arrayify(hash);
+            // console.log("Arrayified hash: ", arrayifiedHash);
+
+            const signaturePromise = walletClient?.signMessage({
+                message: { raw : hash },
+            });
+            const signature = await signaturePromise;
+            console.log("hash is =", hash);
+            console.log("signature is =", signature);
+
+            // 서명 값 정렬하기
+            const sortSignatures = (signers: string[], signatures: string[]): string[] => {
+                const combined = signers.map((address, i) => ({ address, signature: signatures[i] }));
+                combined.sort((a, b) => a.address.localeCompare(b.address));
+                return combined.map((x) => x.signature);
+            };
+
+            try {
+                const verifyResult = await verifyMessage(config, {
+                    address: safeLiteWallet,
+                    message: { raw : hash },
+                    signature: signature || "",
+                });
+                console.log("verifyResult is =", verifyResult);
+            } catch (error) {
+                const verifyMessageError = error as VerifyMessageErrorType
+                console.log("verifyResult is =", verifyMessageError);
+            }
+
+            // executeTransaction 호출
+            const executeTransaction = walletClient?.writeContract({
+                abi: safeLiteAbi.abi,
+                address: safeLiteWallet,
+                functionName: 'executeTransaction',
+                args: [
+                    toInput,
+                    BigInt(valueInput),
+                    "0x",
+                    sortSignatures(["0xC9bC7F8D3130D1B936A29c726e7A5D601401bd56"], [signature || ""]),
+                    // InvalidArrayError: Value로 인해서 sortSignatures 함수 호출
+                ],
+                gas: parseGwei('2'), 
+                gasPrice: parseGwei('2'),
             });
 
             alert("suucced");
@@ -33,13 +94,6 @@ export default function ExecuteTx() {
             alert("failed" + error.message);
         }
     };
-
-    // signMEssage()
-    // sign message할 때 ethers.utils.arrayify(hash)로 넘겨보고, 안되면 메타마스크에서는 hash로 할 수 있으나
-    // ethers import하고 위에 arrayify해서 signMessage wagmai의 기능 사용해서 하면 될 거 같다.
-    // nonce읽는 거는 read contract, 트랜잭션 해시도 ui에서 read contract로 가져오기
-    // function name에는 executeTransaction은 wrtieContract써서, address에 컨트랙트 어드레스, abi는 import되어있고,
-    // args에다가 executeTransaction의 to, value, data, signatures 넣어주면 될 거 같다.
 
     return (
         <div>
@@ -49,7 +103,7 @@ export default function ExecuteTx() {
             <input
                 type="text"
                 id="to"
-                value={to}
+                value={toInput}
                 onChange={(e) => setTo(e.target.value)}
             />
             <br />
@@ -57,7 +111,7 @@ export default function ExecuteTx() {
             <input
                 type="number"
                 id="value"
-                value={value}
+                value={valueInput}
                 onChange={(e) => setValue(parseInt(e.target.value))}
             />
             <br />

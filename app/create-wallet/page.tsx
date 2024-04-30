@@ -36,7 +36,7 @@ export default function CreateWallet() {
         const contract = await walletClient?.deployContract({
             abi: safeLiteAbi.abi,
             bytecode: safeLiteAbi.bytecode as `0x${string}`,
-            args: [8217, owners, threshold],
+            args: [1001, owners, threshold],
         })
         setSafeLiteDeployTxHash(contract ? contract : '')
         if (result.isFetched && result?.status !== 'success') {
