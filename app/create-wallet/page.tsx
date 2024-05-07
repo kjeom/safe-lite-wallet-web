@@ -16,12 +16,13 @@ export default function CreateWallet() {
     const [threshold, setThreshold] = useState(0)
     const [owners, setOwners] = useState<`0x${string}`[]>(['0x',])
     const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
+    const safeLiteWallet = useSafeLite()
 
     const createHandler = async () => {
         let invalidAddr = ''
         owners.map((owner) => {
-            if (!isAddress(owner)) {
-                invalidAddr = owner
+            if (!isAddress(owner)) { 
+                invalidAddr = owner 
             }
         })
         if (invalidAddr) {
@@ -41,6 +42,9 @@ export default function CreateWallet() {
         if (result.isFetched && result?.status !== 'success') {
             alert('Wallet Creation failed' + result?.error)
         }
+        if (result.isFetched && result?.status == 'success') {
+            alert('Wallet Creation succeed' + result?.error)
+        }``
     }
 
     useEffect(() => {
@@ -100,6 +104,7 @@ export default function CreateWallet() {
             </ul>
             <h1>{safeLite}</h1>
             <button onClick={createHandler}>Create</button>
+            <h1>{safeLiteWallet}</h1>
         </div>
     );
 }
