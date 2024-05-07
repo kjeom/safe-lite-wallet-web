@@ -1,6 +1,6 @@
 'use client';
 
-import { useWalletClient, useWaitForTransactionReceipt } from "wagmi"; // 지갑 클라이언트의 데이터 로딩 상태 관리
+import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
 import * as safeLiteAbi from '@/abi/safeLite.json';
 import { useEffect, useState } from "react";
 import { isAddress } from "web3-validator";
@@ -18,15 +18,15 @@ export default function CreateWallet() {
     const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
     const safeLiteWallet = useSafeLite()
 
-    const createHandler = async () => { // 지갑 생성 함수, 버튼 클릭 시 호출
+    const createHandler = async () => {
         let invalidAddr = ''
-        owners.map((owner) => { // 지갑만들 주소가 유효한지 확인
+        owners.map((owner) => {
             if (!isAddress(owner)) { 
                 invalidAddr = owner 
             }
         })
         if (invalidAddr) {
-            alert('Invalid address: ' + invalidAddr) // 유효하지않은 주소가 존재하면 알림창
+            alert('Invalid address: ' + invalidAddr)
             return
         }
         if (threshold <= 0 || threshold > owners.length) {
