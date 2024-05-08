@@ -106,5 +106,6 @@ export default function CreateWallet() {
             <button onClick={createHandler}>Create</button>
             <h1>{safeLiteWallet}</h1>
         </div>
+        
     );
 }
