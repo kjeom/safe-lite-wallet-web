@@ -15,9 +15,6 @@ export default function ExecuteTx() {
     const [toInput, setTo] = useState('');
     const [valueInput, setValue] = useState('');
     const [signature, setSignature] = useState('');
-    const [wallet1, setWallet1] = useState('');
-    const [wallet2, setWallet2] = useState('');
-    const [wallet3, setWallet3] = useState('');
     const [sig1, setSig1] = useState('');
     const [sig2, setSig2] = useState('');
     const [sig3, setSig3] = useState('');
@@ -28,6 +25,18 @@ export default function ExecuteTx() {
         return combined.map((x) => x.signature);
     };
 
+    const recoverSignatures = async (hash: string, signatures: string[]): Promise<string[]> => {
+        const recoveredAddressesPromises = signatures.map((signature) =>
+            readContract(config, {
+                abi: safeLiteAbi.abi,
+                address: multiSigInput,
+                functionName: 'recover',
+                args: [hash, signature],
+            })
+        );
+        return Promise.all(recoveredAddressesPromises);
+    };
+
     const signTxHandler = async () => {
         const nonce = await readContract(config, {
             abi: safeLiteAbi.abi,
@@ -35,7 +44,7 @@ export default function ExecuteTx() {
             functionName: 'nonce',
             args: [],
         });
-        console.log("nonce is: ", nonce);
+        // console.log("nonce is: ", nonce);
 
         const hash = await readContract(config, {
             abi: safeLiteAbi.abi,
@@ -43,21 +52,39 @@ export default function ExecuteTx() {
             functionName: 'getTransactionHash',
             args: [Number(nonce), toInput, valueInput, ""],
         });
-        console.log("Transaction hash fetched: ", hash);
-        console.log("nonce is", nonce)
-        console.log("walletClient?.account.address: ", walletClient?.account.address);
+        // console.log("Transaction hash fetched: ", hash);
+        // console.log("nonce is", nonce)
+        // console.log("walletClient?.account.address: ", walletClient?.account.address);
 
         const signaturePromise = walletClient?.signMessage({
             message: { raw: hash },
         });
         const signature = await signaturePromise;
-        console.log("hash is =", hash);
-        console.log("signature is =", signature);
+        // console.log("hash is =", hash);
+        // console.log("signature is =", signature);
 
         setSignature(signature || "");
     };
 
     const executeTxHandler = async () => {
+        const nonce = await readContract(config, {
+            abi: safeLiteAbi.abi,
+            address: multiSigInput,
+            functionName: 'nonce',
+            args: [],
+        });
+        
+        const hash = await readContract(config, {
+            abi: safeLiteAbi.abi,
+            address: multiSigInput,
+            functionName: 'getTransactionHash',
+            args: [Number(nonce), toInput, valueInput, ""],
+        });
+
+        const signatures = [sig1, sig2, sig3].filter(Boolean) as string[];
+        const recoveredAddresses = await recoverSignatures(hash, signatures);
+        // console.log("Recovered addresses: ", recoveredAddresses);
+
         const executeTransaction = await walletClient?.writeContract({
             abi: safeLiteAbi.abi,
             address: multiSigInput,
@@ -66,7 +93,7 @@ export default function ExecuteTx() {
                 toInput,
                 valueInput,
                 "",
-                sortSignatures([wallet1, wallet2, wallet3], [sig1 || "", sig2 || "", sig3 || ""]),
+                sortSignatures(recoveredAddresses, signatures),
             ],
         });
     };
@@ -110,14 +137,6 @@ export default function ExecuteTx() {
                                     <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
                                         <div style={{ color: 'white', fontSize: 28, fontFamily: 'DM Sans', fontWeight: '400', wordWrap: 'break-word' }}>Execute Transaction</div>
                                         <div style={{ justifyContent: 'flex-start', alignItems: 'flex-start', gap: 42, display: 'inline-flex' }}>
-                                            <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 16, display: 'inline-flex' }}>
-                                                <input type="text" id="wallet1" value={wallet1} onChange={(e) => setWallet1(e.target.value)} placeholder="Wallet 1" style={{ color: 'white', fontSize: 24, fontFamily: 'DM Sans', fontWeight: '300', wordWrap: 'break-word', width: 400, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 16, background: 'black', borderRadius: 10, overflow: 'hidden', border: '1px #303033 solid', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex' }}>
-                                                </input>
-                                                <input type="text" id="wallet2" value={wallet2} onChange={(e) => setWallet2(e.target.value)} placeholder="Wallet 2" style={{ color: 'white', fontSize: 24, fontFamily: 'DM Sans', fontWeight: '300', wordWrap: 'break-word', width: 400, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 16, background: 'black', borderRadius: 10, overflow: 'hidden', border: '1px #303033 solid', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex' }}>
-                                                </input>
-                                                <input type="text" id="wallet3" value={wallet3} onChange={(e) => setWallet3(e.target.value)} placeholder="Wallet 3" style={{ color: 'white', fontSize: 24, fontFamily: 'DM Sans', fontWeight: '300', wordWrap: 'break-word', width: 400, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 16, background: 'black', borderRadius: 10, overflow: 'hidden', border: '1px #303033 solid', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex' }}>
-                                                </input>
-                                            </div>
                                             <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 16, display: 'inline-flex' }}>
                                                 <input type="text" id="sig1" value={sig1} onChange={(e) => setSig1(e.target.value)} placeholder="Signature 1" style={{ color: 'white', fontSize: 24, fontFamily: 'DM Sans', fontWeight: '300', wordWrap: 'break-word', width: 400, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 16, background: 'black', borderRadius: 10, overflow: 'hidden', border: '1px #303033 solid', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex' }}>
                                                 </input>
