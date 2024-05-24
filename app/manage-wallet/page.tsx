@@ -1,0 +1,78 @@
+'use client';
+
+import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
+import { readContract } from "@wagmi/core"
+import { config } from "@/app/config/config"
+import * as safeLiteAbi from '@/abi/safeLite.json';
+import { useEffect, useState } from "react";
+import { isAddress } from "web3-validator";
+import { useSafeLite } from "@/hooks/useSafeLite";
+import { Input, Button } from "@nextui-org/react";
+
+export default function ManageWallet() {
+    const { data: walletClient, isError, isLoading } = useWalletClient()
+    const [safeLiteDeployTxHash, setSafeLiteDeployTxHash] = useState('')
+    const result = useWaitForTransactionReceipt({
+        hash: safeLiteDeployTxHash as `0x${string}`,
+    })
+    const [threshold, setThreshold] = useState(0)
+    const [owners, setOwners] = useState<`0x${string}`[]>([])
+    const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
+    const safeLiteWallet = useSafeLite()
+    const [multiSigInput, setMultiSigInput] = useState('');
+
+    const inquiryHandler = async() => {
+        const owners = await readContract(config, {
+            abi : safeLiteAbi.abi,
+            address : multiSigInput,
+            functionName : 'getOwners',
+            args: [],
+        })
+
+        console.log(owners);
+        setOwners(owners);
+    };
+
+    const ownersInputs = owners.map((owner, index) => (
+        <div key={index} style={{ width: 422 }}>
+            <Input size="lg" variant="bordered" color="success" type="text" label={`Owner ${index + 1}`} value={owner} readOnly />
+        </div>
+    ));
+
+    return (
+        <div style={{ backgroundColor: '#121312', minHeight: '100vh' }}>
+            <br></br>
+            <br></br>
+            <div style={{ width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 10, display: 'inline-flex' }}>
+                <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-end', gap: 44, display: 'flex' }}>
+                    <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 46, display: 'flex' }}>
+                        <div style={{ width: 400, color: 'white', fontSize: 38, fontFamily: 'Outfit', fontWeight: '700', wordWrap: 'break-word' }}>Manage Wallet</div>
+                        <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 80, display: 'inline-flex' }}>
+                            <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
+                                <h3>Multisig wallet address</h3>
+                                <div style={{ justifyContent: 'flex-start', alignItems: 'flex-end', gap: 22, display: 'inline-flex' }}>
+                                    <div style={{ width: 422 }}>
+                                        <Input size="lg" variant="bordered" color="success" type="text" value={multiSigInput} onChange={(e) => setMultiSigInput(e.target.value)} />
+                                    </div>
+                                    <Button size="lg" onClick={inquiryHandler}>Inquiry</Button>
+                                </div>
+                            </div>
+                            <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
+                                <h3>Owners</h3>
+                                <div id="owners-container" style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 10, display: 'inline-flex' }}>
+                                    {ownersInputs}
+                                    <Button color="success" variant="shadow" className="text-white" onClick={() => {
+                                            setOwners(owners.concat('' as `0x${string}`))
+                                        }}>
+                                            + Add new Signer
+                                        </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    );
+}

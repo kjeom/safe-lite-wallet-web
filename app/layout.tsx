@@ -1,10 +1,10 @@
 import { Providers } from "../components/providers/providers"
-import { DM_Sans } from "next/font/google";
+import { Outfit } from "next/font/google";
 import '@rainbow-me/rainbowkit/styles.css';
 import "./global.css";
 import Navigation from "../components/header/navigation";
 
-const dm_sans = DM_Sans({
+const outfit = Outfit({
   weight: 'variable',
   subsets: ["latin"]
 });
@@ -21,10 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={dm_sans.className} style={{ color: 'white', backgroundColor: '#121312'}}>
+      <body className={outfit.className} style={{ color: 'white', backgroundColor: '#1C1C1C' }}>
         <Providers>
           <Navigation />
-          {children}
+            {children}
         </Providers>
       </body>
     </html>
