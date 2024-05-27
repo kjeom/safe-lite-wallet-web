@@ -5,6 +5,7 @@ import { readContract } from "@wagmi/core"
 import { config } from "@/app/config/config"
 import * as safeLiteAbi from '@/abi/safeLite.json';
 import { useEffect, useState } from "react";
+import { ethers } from "ethers";
 import { isAddress } from "web3-validator";
 import { useSafeLite } from "@/hooks/useSafeLite";
 import { Input, Button } from "@nextui-org/react";
@@ -20,14 +21,24 @@ export default function ManageWallet() {
     const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
     const safeLiteWallet = useSafeLite()
     const [multiSigInput, setMultiSigInput] = useState('');
+    const [balance, setBalance] = useState(0)
 
-    const inquiryHandler = async() => {
-        const owners = await readContract(config, {
-            abi : safeLiteAbi.abi,
-            address : multiSigInput,
-            functionName : 'getOwners',
+    const inquiryHandler = async () => {
+        const balacne = await readContract(config, {
+            abi: safeLiteAbi.abi,
+            address: multiSigInput,
+            functionName: 'getBalance',
             args: [],
-        })
+        });
+        console.log(balance);
+        setBalance(balance);
+
+        const owners = await readContract(config, {
+            abi: safeLiteAbi.abi,
+            address: multiSigInput,
+            functionName: 'getOwners',
+            args: [],
+        });
 
         console.log(owners);
         setOwners(owners);
@@ -58,14 +69,24 @@ export default function ManageWallet() {
                                 </div>
                             </div>
                             <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
+                                <h3>Balance</h3>
+                                <div style={{ width: 422 }}>
+                                    <Input size="lg" variant="bordered" color="success" isReadOnly type="text" value={balance} endContent={
+                                                    <div className="pointer-events-none flex items-center">
+                                                        <span className="text-default-400 text-small">KLAY</span>
+                                                    </div>
+                                                } />
+                                </div>
+                            </div>
+                            <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
                                 <h3>Owners</h3>
                                 <div id="owners-container" style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 10, display: 'inline-flex' }}>
                                     {ownersInputs}
                                     <Button color="success" variant="shadow" className="text-white" onClick={() => {
-                                            setOwners(owners.concat('' as `0x${string}`))
-                                        }}>
-                                            + Add new Signer
-                                        </Button>
+                                        setOwners(owners.concat('' as `0x${string}`))
+                                    }}>
+                                        + Add new Signer
+                                    </Button>
                                 </div>
                             </div>
                         </div>

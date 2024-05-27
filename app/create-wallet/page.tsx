@@ -54,7 +54,7 @@ export default function CreateWallet() {
             setOwners(newOwners)
         }
     }, [walletClient?.account.address])
-    0xb998db547171cb7169952b4ba3222e06e732640b
+    
     const ownerList = []
     for (let i = 0; i < owners.length; i++) {
         ownerList.push(

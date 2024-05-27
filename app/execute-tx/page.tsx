@@ -1,14 +1,14 @@
 'use client';
 
 import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
-import { signMessage, writeContract, readContract} from '@wagmi/core';
+import { signMessage, writeContract, readContract } from '@wagmi/core';
 import { config } from '@/app/config/config';
 import { parseGwei, parseEther } from 'viem'
 import { ethers } from "ethers";
 import { useState } from 'react';
 import { useSafeLite } from "@/hooks/useSafeLite";
 import * as safeLiteAbi from '@/abi/safeLite.json';
-import { Input, Button } from "@nextui-org/react";
+import { Input, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
 
 export default function ExecuteTx() {
     const { data: walletClient, isError, isLoading } = useWalletClient();
@@ -108,14 +108,6 @@ export default function ExecuteTx() {
                 signature,
             ],
         });
-
-        const signatureCount1 = await readContract(config, {
-            abi: safeLiteAbi.abi,
-            address: multiSigInput,
-            functionName: 'getSignatureCount',
-            args: [Number(nonce)],
-        });
-        console.log("changed signatureCount is: ", signatureCount1);
     };
 
     return (
@@ -154,19 +146,36 @@ export default function ExecuteTx() {
                                 </div>
                             </div>
                         </div>
-                        <h2 style={{ color: 'white', fontSize: 38, fontFamily: 'Outfit', fontWeight: '900', wordWrap: 'break-word' }}>Get Transaction Info</h2>
-                        <Input type="text" placeholder="Transaction ID" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
-                        <Button onClick={getTransactionInfoHandler} size="lg" color="success" variant="shadow" className="text-white">Get Transaction Info</Button>
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                        {transactionInfo && (
-                            <div>
-                                <p>To: {transactionInfo[0]}</p>
-                                <p>Value: {ethers.utils.formatEther(transactionInfo[1])} KLAY</p>
-                                <p>Data: {transactionInfo[2]}</p>
-                                <p>Executed: {transactionInfo[3] ? "Yes" : "No"}</p>
-                                <p>Signature Count: {transactionInfo[4]}</p>
-                            </div>
-                        )}
+                        <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 40, display: 'flex', marginBottom: "200px" }}>
+                            <h2 style={{ color: 'white', fontSize: 38, fontFamily: 'Outfit', fontWeight: '900', wordWrap: 'break-word' }}>Get Transaction Info</h2>
+                            <Input type="text" placeholder="Transaction ID" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
+                            <Button onClick={getTransactionInfoHandler} size="lg" color="success" variant="shadow" className="text-white">Get Transaction Info</Button>
+                            {error && <p style={{ color: 'red' }}>{error}</p>}
+                            {transactionInfo && (
+                                <Table         
+                                color="success"
+                                selectionMode="single" 
+                                defaultSelectedKeys={["2"]} 
+                                aria-label="Transaction Info Table">
+                                    <TableHeader>
+                                        <TableColumn>To</TableColumn>
+                                        <TableColumn>Value</TableColumn>
+                                        <TableColumn>Data</TableColumn>
+                                        <TableColumn>Executed</TableColumn>
+                                        <TableColumn>Signature Count</TableColumn>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow key="1">
+                                            <TableCell>{transactionInfo[0]}</TableCell>
+                                            <TableCell>{ethers.utils.formatEther(transactionInfo[1])} KLAY</TableCell>
+                                            <TableCell>{transactionInfo[2]}</TableCell>
+                                            <TableCell>{transactionInfo[3] ? "Yes" : "No"}</TableCell>
+                                            <TableCell>{Number(transactionInfo[4])}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
