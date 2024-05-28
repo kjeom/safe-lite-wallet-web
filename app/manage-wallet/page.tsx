@@ -24,14 +24,17 @@ export default function ManageWallet() {
     const [balance, setBalance] = useState(0)
 
     const inquiryHandler = async () => {
-        const balacne = await readContract(config, {
+        const balance = await readContract(config, {
             abi: safeLiteAbi.abi,
             address: multiSigInput,
             functionName: 'getBalance',
             args: [],
         });
-        console.log(balance);
-        setBalance(balance);
+        let balanceEther = ethers.utils.formatEther(String(balance));
+        let balanceEtherNoDecimal = balanceEther.replace(/\.0$/, "");
+
+        console.log(balanceEtherNoDecimal);
+        setBalance(Number(balanceEtherNoDecimal));
 
         const owners = await readContract(config, {
             abi: safeLiteAbi.abi,
