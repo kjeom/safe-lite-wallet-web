@@ -1,30 +1,56 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import classes from "./Header.module.css";
-import Link from "next/link";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import React from 'react';
+import {
+  Navbar,
+  NavbarBrand,
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem,
+  NavbarContent,
+  NavbarItem,
+  Link,
+  Button,
+} from '@nextui-org/react';
 
-export default function Navigation() {
+export default function App() {
+  const menuItems = [
+    'Profile',
+    'Dashboard',
+    'Activity',
+    'Analytics',
+    'System',
+    'Deployments',
+    'My Settings',
+    'Team Settings',
+    'Help & Feedback',
+    'Log Out',
+  ];
+
   return (
-    <div>
-      <nav>
-        <div>
-          <Link href="/">
-            <span>Home</span>
+    <Navbar disableAnimation isBordered className='w-full'>
+      <NavbarContent className='hidden sm:flex gap-4' justify='center'>
+        <NavbarItem>
+          <Link color='foreground' href='/'>
+            Home
           </Link>
-        </div>
-        <div>
-          <Link href="/create-wallet">
-            <span>Create Wallet</span>
+        </NavbarItem>
+        <NavbarItem>
+          <Link color='foreground' href='/create-wallet'>
+            Create
           </Link>
-        </div>
-        <div>
-          <Link href="/execute-tx">
-            <span>Execute Transaction</span>
+        </NavbarItem>
+        <NavbarItem isActive>
+          <Link href='/execute-tx' aria-current='page' color='foreground'>
+            Execute
           </Link>
-        </div>
-        <div>
+        </NavbarItem>
+      </NavbarContent>
+
+      <NavbarContent justify='end'>
+        <NavbarItem>
           <ConnectButton />
-        </div>
-      </nav>
-    </div>
+        </NavbarItem>
+      </NavbarContent>
+    </Navbar>
   );
 }
