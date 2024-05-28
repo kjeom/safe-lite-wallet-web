@@ -1,10 +1,13 @@
 import { Providers } from "../components/providers/providers"
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import '@rainbow-me/rainbowkit/styles.css';
 import "./global.css";
 import Navigation from "../components/header/navigation";
 
-const inter = Inter({ subsets: ["latin"] });
+const outfit = Outfit({
+  weight: 'variable',
+  subsets: ["latin"]
+});
 
 export const metadata = {
   title: 'safeLite',
@@ -18,10 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={outfit.className} style={{ color: 'white', backgroundColor: '#1C1C1C' }}>
         <Providers>
           <Navigation />
-          {children}
+            {children}
         </Providers>
       </body>
     </html>
