@@ -59,8 +59,6 @@ export default function ExecuteTx() {
     setSignature(signature || '');
   };
 
-
-  
   const executeTxHandler = async () => {
     const executeTransaction = await walletClient?.writeContract({
       abi: safeLiteAbi.abi,
