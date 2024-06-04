@@ -16,8 +16,7 @@ export default function ExecuteTx() {
     const [toInput, setTo] = useState('');
     const [valueInput, setValue] = useState('');
     const [signature, setSignature] = useState('');
-    const [transactionId, setTransactionId] = useState('');
-    const [transactionInfo, setTransactionInfo] = useState(null);
+    const [transactions, setTransactions] = useState([]);
     const [error, setError] = useState('');
 
     const signTxHandler = async () => {
@@ -58,14 +57,30 @@ export default function ExecuteTx() {
         });
         console.log("nonce is", nonce)
 
-        const transaction = await readContract(config, {
+        /*const transaction = await readContract(config, {
             abi: safeLiteAbi.abi,
             address: multiSigInput,
             functionName: 'getTransaction',
             args: [transactionId],
         });
         console.log("Transaction info: ", transaction);
-        setTransactionInfo(transaction);
+        setTransactionInfo(transaction);*/
+
+        const txs = [];
+        for (let i = 0; i < nonce; i++) {
+            const transaction = await readContract(config, {
+                abi: safeLiteAbi.abi,
+                address: multiSigInput,
+                functionName: 'getTransaction',
+                args: [i],
+            });
+            if (transaction[0] !== '0x0000000000000000000000000000000000000000') {
+                txs.push(transaction);
+            }
+        }
+
+        console.log("Transaction info: ", txs);
+        setTransactions(txs);
     };
 
     const executeTxHandler = async () => {
@@ -148,16 +163,15 @@ export default function ExecuteTx() {
                         </div>
                         <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 40, display: 'flex', marginBottom: "200px" }}>
                             <h2 style={{ color: 'white', fontSize: 38, fontFamily: 'Outfit', fontWeight: '900', wordWrap: 'break-word' }}>Get Transaction Info</h2>
-                            <Input type="text" placeholder="Transaction ID" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
                             <Button onClick={getTransactionInfoHandler} size="lg" color="success" variant="shadow" className="text-white">Get Transaction Info</Button>
                             {error && <p style={{ color: 'red' }}>{error}</p>}
-                            {transactionInfo && (
-                                <Table         
-                                color="success"
-                                selectionMode="single" 
-                                defaultSelectedKeys={["2"]} 
-                                aria-label="Transaction Info Table">
+                            {transactions.length > 0 && (
+                                <Table
+                                    color="success"
+                                    selectionMode="single"
+                                    aria-label="Transaction Info Table">
                                     <TableHeader>
+                                        <TableColumn>Transaction ID</TableColumn>
                                         <TableColumn>To</TableColumn>
                                         <TableColumn>Value</TableColumn>
                                         <TableColumn>Data</TableColumn>
@@ -165,13 +179,16 @@ export default function ExecuteTx() {
                                         <TableColumn>Signature Count</TableColumn>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow key="1">
-                                            <TableCell>{transactionInfo[0]}</TableCell>
-                                            <TableCell>{ethers.utils.formatEther(transactionInfo[1])} KLAY</TableCell>
-                                            <TableCell>{transactionInfo[2]}</TableCell>
-                                            <TableCell>{transactionInfo[3] ? "Yes" : "No"}</TableCell>
-                                            <TableCell>{Number(transactionInfo[4])}</TableCell>
-                                        </TableRow>
+                                        {transactions.map((transaction, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{index}</TableCell>
+                                                <TableCell>{transaction[0]}</TableCell>
+                                                <TableCell>{ethers.utils.formatEther(transaction[1])} KLAY</TableCell>
+                                                <TableCell>{transaction[2]}</TableCell>
+                                                <TableCell>{transaction[3] ? "Yes" : "No"}</TableCell>
+                                                <TableCell>{Number(transaction[4])}</TableCell>
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
                                 </Table>
                             )}

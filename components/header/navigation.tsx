@@ -36,7 +36,7 @@ export default function Navigation() {
         <NavbarMenuToggle aria-label={isMenuOpen ? "Close menu" : "Open menu"} />
       </NavbarContent>
 
-      <NavbarContent>
+      <NavbarContent justify='start'>
         <NavbarBrand>
           <div style={{ width: 143, height: 29, position: 'relative' }}>
             <img
@@ -52,7 +52,7 @@ export default function Navigation() {
         </NavbarBrand>
       </NavbarContent>
 
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
+      <NavbarContent className="hidden sm:flex" style={{ flexGrow: 1, justifyContent: 'center', gap: '4rem' }} >
         <NavbarItem>
           <Link href="/" color="foreground">
             Home
@@ -80,7 +80,7 @@ export default function Navigation() {
           <ConnectButton />
         </NavbarItem>
       </NavbarContent>
-      
+
       <NavbarMenu>
         {menuItems.map((item, index) => (
           <NavbarMenuItem key={`${item}-${index}`}>
