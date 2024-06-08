@@ -24,14 +24,17 @@ export default function ManageWallet() {
     const [balance, setBalance] = useState(0)
 
     const inquiryHandler = async () => {
-        const balacne = await readContract(config, {
+        const balance = await readContract(config, {
             abi: safeLiteAbi.abi,
             address: multiSigInput,
             functionName: 'getBalance',
             args: [],
         });
-        console.log(balance);
-        setBalance(balance);
+        let balanceEther = ethers.utils.formatEther(String(balance));
+        let balanceEtherNoDecimal = balanceEther.replace(/\.0$/, "");
+
+        console.log(balanceEtherNoDecimal);
+        setBalance(Number(balanceEtherNoDecimal));
 
         const owners = await readContract(config, {
             abi: safeLiteAbi.abi,
@@ -46,7 +49,7 @@ export default function ManageWallet() {
 
     const ownersInputs = owners.map((owner, index) => (
         <div key={index} style={{ width: 422 }}>
-            <Input size="lg" variant="bordered" color="success" type="text" label={`Owner ${index + 1}`} value={owner} readOnly />
+            <Input size="lg" variant="bordered" color="success" type="text" label={`new Signer ${index + 1}`} value={owner} />
         </div>
     ));
 
@@ -72,21 +75,28 @@ export default function ManageWallet() {
                                 <h3>Balance</h3>
                                 <div style={{ width: 422 }}>
                                     <Input size="lg" variant="bordered" color="success" isReadOnly type="text" value={balance} endContent={
-                                                    <div className="pointer-events-none flex items-center">
-                                                        <span className="text-default-400 text-small">KLAY</span>
-                                                    </div>
-                                                } />
+                                        <div className="pointer-events-none flex items-center">
+                                            <span className="text-default-400 text-small">KLAY</span>
+                                        </div>
+                                    } />
                                 </div>
                             </div>
                             <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
                                 <h3>Owners</h3>
                                 <div id="owners-container" style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 10, display: 'inline-flex' }}>
                                     {ownersInputs}
-                                    <Button color="success" variant="shadow" className="text-white" onClick={() => {
-                                        setOwners(owners.concat('' as `0x${string}`))
-                                    }}>
-                                        + Add new Signer
-                                    </Button>
+                                    <div style={{ display: 'flex', gap: 10 }}>
+                                        <Button color="success" variant="shadow" className="text-white" onClick={() => {
+                                            setOwners(owners.concat('' as `0x${string}`))
+                                        }}>
+                                            + Add new Signer
+                                        </Button>
+                                        <Button color="danger" variant="shadow" className="text-white" onClick={() => {
+                                            setOwners(owners.slice(0, -1))
+                                        }}>
+                                            - Delete Signer
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
