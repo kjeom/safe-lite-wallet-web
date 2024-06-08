@@ -30,6 +30,8 @@ export default function Navigation() {
       isBordered
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
+      maxWidth="full"
+      style={{ backgroundColor: '#1C1C1C'}}
     >
 
       <NavbarContent className="sm:hidden" justify="start">
@@ -52,7 +54,7 @@ export default function Navigation() {
         </NavbarBrand>
       </NavbarContent>
 
-      <NavbarContent className="hidden sm:flex" style={{ flexGrow: 1, justifyContent: 'center', gap: '4rem' }} >
+      <NavbarContent className="hidden sm:flex" style={{ flexGrow: 4, justifyContent: 'center', gap: '4rem' }} >
         <NavbarItem>
           <Link href="/" color="foreground">
             Home
