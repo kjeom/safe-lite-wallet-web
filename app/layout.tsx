@@ -10,8 +10,11 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: 'safeLite',
-  description: 'Multisig wallet dapp',
+  title: 'Kaia SafeLite',
+  description: 'Kaia Multisig wallet dapp',
+  icons: {
+		icon: "/favicon.png",
+	},
 }
 
 export default function RootLayout({
@@ -21,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={outfit.className} style={{ color: 'white', backgroundColor: '#1C1C1C' }}>
+      <body className={outfit.className} style={{ color: 'white', backgroundColor: '#121312' }}>
         <Providers>
           <Navigation />
             {children}

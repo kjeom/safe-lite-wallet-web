@@ -1,11 +1,14 @@
 'use client';
 
-import { useWalletClient, useWaitForTransactionReceipt } from "wagmi";
+import { useWalletClient, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import * as safeLiteAbi from '@/abi/safeLite.json';
+import * as safeLiteAddressBookAbi from '@/abi/SafeLiteAddressBook.json';
 import { useEffect, useState } from "react";
 import { isAddress } from "web3-validator";
 import { useSafeLite } from "@/hooks/useSafeLite";
-import { Input, Button } from "@nextui-org/react";
+import { Input, Button, Image } from "@nextui-org/react";
+import { useRouter } from 'next/navigation';
+import { useWallet } from "@/app/walletContext";
 
 export default function CreateWallet() {
     const { data: walletClient, isError, isLoading } = useWalletClient()
@@ -17,6 +20,18 @@ export default function CreateWallet() {
     const [owners, setOwners] = useState<`0x${string}`[]>(['0x',])
     const safeLite = useSafeLite(result?.data?.contractAddress ? result?.data?.contractAddress : undefined)
     const safeLiteWallet = useSafeLite()
+    const { writeContract } = useWriteContract();
+
+    const router = useRouter();
+    const { setSelectedWallet } = useWallet();
+
+    useEffect(() => {
+        if (result.isFetched && result.status === 'success' && safeLite) {
+            setSelectedWallet(safeLite); // 생성된 지갑 주소 저장
+        } else if (result.isFetched && result.status !== 'success') {
+            alert('Wallet Creation failed');
+        }
+    }, [result, safeLite, setSelectedWallet, router]);
 
     const createHandler = async () => {
         let invalidAddr = ''
@@ -33,18 +48,18 @@ export default function CreateWallet() {
             alert('Invalid threshold: ' + threshold)
             return
         }
-        const contract = await walletClient?.deployContract({
-            abi: safeLiteAbi.abi,
-            bytecode: safeLiteAbi.bytecode as `0x${string}`,
-            args: [1001, owners, threshold],
-        })
-        setSafeLiteDeployTxHash(contract ? contract : '')
-        if (result.isFetched && result?.status !== 'success') {
-            alert('Wallet Creation failed' + result?.error)
+        try {
+            const contract = await walletClient?.deployContract({
+                abi: safeLiteAbi.abi,
+                bytecode: safeLiteAbi.bytecode as `0x${string}`,
+                args: [1001, owners, threshold],
+            })
+            setSafeLiteDeployTxHash(contract ? contract : '')
+
+        } catch (error) {
+            console.error('Error:', error)
+            alert('Wallet creation or recording failed')
         }
-        if (result.isFetched && result?.status == 'success') {
-            alert('Wallet Creation succeed' + result?.error)
-        } ``
     }
 
     useEffect(() => {
@@ -54,12 +69,12 @@ export default function CreateWallet() {
             setOwners(newOwners)
         }
     }, [walletClient?.account.address])
-    
+
     const ownerList = []
     for (let i = 0; i < owners.length; i++) {
         ownerList.push(
             <li key={i}>
-                <Input style={{ width: 400 }} variant="bordered" color="success" type="text" label={`Signer ${i + 1}`} size="lg" id="multiSig" placeholder="Signer Address"
+                <Input style={{ width: 400 }} variant="bordered" color="primary" label={`Signer ${i + 1}`} size="lg" id="multiSig" placeholder="Signer Address"
                     {...i === 0 ? { readOnly: true } : {}}
                     type="text"
                     value={owners[i]}
@@ -86,7 +101,7 @@ export default function CreateWallet() {
                                 <ul style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 16, display: 'flex' }}>
                                     <h3>Owners</h3>
                                     <div style={{ justifyContent: 'flex-start', alignItems: 'flex-end', gap: 22, display: 'inline-flex' }}>
-                                        <Button color="success" variant="shadow" className="text-white" onClick={() => {
+                                        <Button color="primary" variant="shadow" className="text-black" onClick={() => {
                                             setOwners(owners.concat('' as `0x${string}`))
                                         }}>
                                             + Add new Signer
@@ -106,21 +121,29 @@ export default function CreateWallet() {
                                     <Input
                                         type="text"
                                         size="lg"
-                                        value={threshold}
+                                        value={threshold.toString()}
                                         onChange={(e) => {
                                             setThreshold(parseInt(e.target.value))
                                         }}
                                     />
                                 </ul>
-                                <Button onClick={createHandler} size="lg" color="success" variant="shadow" className="text-white">Create</Button>
+                                <Button onClick={createHandler} size="lg" color="primary" variant="shadow" className="text-black">Create</Button>
                             </div>
                             <div style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 20, display: 'flex' }}>
                                 <h3>Multisig wallet address</h3>
-                                <div style={{ justifyContent: 'flex-start', alignItems: 'flex-end', gap: 22, display: 'inline-flex' }}>
+                                <div style={{ justifyContent: 'flex-start', alignItems: 'flex-end', gap: 20, display: 'inline-flex' }}>
                                     <div style={{ width: 422 }}>
                                         <Input size="lg" variant="bordered" color="success" isReadOnly type="text" value={safeLite} />
                                     </div>
-                                    <Button size="lg" onClick={() => navigator.clipboard.writeText(safeLite)}>Copy</Button>
+                                    <Button size="lg" isIconOnly onClick={() => {
+                                        if (safeLite) {
+                                            navigator.clipboard.writeText(safeLite);
+                                        } else {
+                                            alert('Multisig wallet address is not available');
+                                        }
+                                    }}>
+                                        <Image src="./icon_copy.svg" radius="none" alt="logo" width={20} height={2} />
+                                    </Button>
                                 </div>
                             </div>
                         </div>
